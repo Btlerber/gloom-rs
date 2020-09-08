@@ -39,10 +39,7 @@ fn offset<T>(n: u32) -> *const c_void {
 
 
 // == // Modify and complete the function below for the first task
-unsafe fn FUNCTION_NAME(ARGUMENT_NAME: &Vec<f32>, ARGUMENT_NAME: &Vec<u32>) -> u32{
-  
-    
-} 
+//unsafe fn triangleFactory(ARGUMENT_NAME: &Vec<f32>, ARGUMENT_NAME: &Vec<u32>) -> u32{} 
 
 fn main() {
     // Set up the necessary objects to deal with windows and event handling
