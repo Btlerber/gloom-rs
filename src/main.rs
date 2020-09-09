@@ -41,11 +41,47 @@ fn offset<T>(n: u32) -> *const c_void {
 
 // == // Modify and complete the function below for the first task
 unsafe fn vao_trngle_Factory(vertex: &Vec<f32>, indices: &Vec<u32>) -> u32{ 
-    let vao_id: GLuint = 0;
-    void glGenVertexArrays(1,&mut vao_id);
-    void glBindVertexArray(vao_id);
-    void glGenBuffers(int count, unsigned int* bufferIds);
+    let mut vao_id: GLuint = 0;
+    glGenVertexArrays(1, &mut vao_id);  //lager arrays med punkter
+    glBindVertexArray(vao_id);      //gjør array til VAO bundet
+    //glGenBuffers(int count, unsigned int* bufferIds);
 
+    let mut vbo_id: GLuint = 0;
+    gl::glGenBuffers(1,&mut vbo_id);
+    
+    
+    gl::BindBuffer(gl:ARRAY_BUFFER,vbo_id);
+    gl::bufferData(
+        gl::ARRAY_BUFFER,  //target, typen vi ønsker å buffre.
+        (vertex.len() * size_of<f32>()) as gl::types::GLsizeiptr,
+        vertex.as_ptr() as *const gl::types::GLvoid, //pointer to data, and size  
+        STATIC_DRAW, //usage
+    );
+    
+    gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+
+    gl::EnableVertexAttribArray(0);
+    gl::VertexAttribPointer(
+        0, //generisk vertex attributt
+        3, //antall componenter per vertex komponent.
+        gl::FLOAT, 
+        gl::False, // int to float conversion (normalizzed) det her skjønte jeg ikke....
+        (3*size_of::<f32>()) as gl::types::GLint,
+        std::ptr::null()
+    );
+
+    glGenBuffers(0,&mut vbo_id)    
+    glBindBuffer(gl::ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glBufferData(
+        
+        
+    )
+    
+    let 
+
+
+        
 
 
     return vao_id;
