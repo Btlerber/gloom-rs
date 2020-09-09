@@ -1,4 +1,5 @@
 extern crate nalgebra_glm as glm;
+use gl::types::*;
 use std::{ mem, ptr, os::raw::c_void };
 use std::thread;
 use std::sync::{Mutex, Arc, RwLock};
@@ -39,7 +40,20 @@ fn offset<T>(n: u32) -> *const c_void {
 
 
 // == // Modify and complete the function below for the first task
-//unsafe fn triangleFactory(ARGUMENT_NAME: &Vec<f32>, ARGUMENT_NAME: &Vec<u32>) -> u32{} 
+unsafe fn vao_trngle_Factory(vertex: &Vec<f32>, indices: &Vec<u32>) -> u32{ 
+    let vao_id: GLuint = 0;
+    void glGenVertexArrays(1,&mut vao_id);
+    void glBindVertexArray(vao_id);
+    void glGenBuffers(int count, unsigned int* bufferIds);
+
+
+
+    return vao_id;
+} 
+
+
+
+
 
 fn main() {
     // Set up the necessary objects to deal with windows and event handling
@@ -91,8 +105,11 @@ fn main() {
         }
 
         // == // Set up your VAO here
+        //jeg veitafaen hva jeg driver med
         unsafe {
-
+            GLuint VertexArrayID;
+            glGenVertexArrays(1, &VertexArrayID);
+            glBindVertexArray(VertexArrayID);
         }
 
         // Basic usage of shader helper
