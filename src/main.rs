@@ -42,20 +42,20 @@ fn offset<T>(n: u32) -> *const c_void {
 // == // Modify and complete the function below for the first task
 unsafe fn vao_trngle_Factory(vertex: &Vec<f32>, indices: &Vec<u32>) -> u32{ 
     let mut vao_id: GLuint = 0;
-    glGenVertexArrays(1, &mut vao_id);  //lager arrays med punkter
-    glBindVertexArray(vao_id);      //gjør array til VAO bundet
+    gl::GenVertexArrays(1, &mut vao_id);  //lager arrays med punkter
+    gl::BindVertexArray(vao_id);      //gjør array til VAO bundet
     //glGenBuffers(int count, unsigned int* bufferIds);
 
     let mut vbo_id: GLuint = 0;
-    gl::glGenBuffers(1,&mut vbo_id);
+    gl::GenBuffers(1,&mut vbo_id);
     
     
-    gl::BindBuffer(gl:ARRAY_BUFFER,vbo_id);
-    gl::bufferData(
+    gl::BindBuffer(gl::ARRAY_BUFFER,vbo_id);
+    gl::BufferData(
         gl::ARRAY_BUFFER,  //target, typen vi ønsker å buffre.
         (vertex.len() * size_of<f32>()) as gl::types::GLsizeiptr,
         vertex.as_ptr() as *const gl::types::GLvoid, //pointer to data, and size  
-        STATIC_DRAW, //usage
+        gl::STATIC_DRAW, //usage
     );
     
     gl::BindBuffer(gl::ARRAY_BUFFER, 0);
@@ -65,20 +65,22 @@ unsafe fn vao_trngle_Factory(vertex: &Vec<f32>, indices: &Vec<u32>) -> u32{
         0, //generisk vertex attributt
         3, //antall componenter per vertex komponent.
         gl::FLOAT, 
-        gl::False, // int to float conversion (normalizzed) det her skjønte jeg ikke....
+        gl::0, // int to float conversion (normalizzed) det her skjønte jeg ikke....
         (3*size_of::<f32>()) as gl::types::GLint,
         std::ptr::null()
     );
 
-    glGenBuffers(0,&mut vbo_id)    
-    glBindBuffer(gl::ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    glBufferData(
-        
-        
-    )
+    gl::GenBuffers(0,&mut vbo_id);    
+    gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+    gl::BindVertexArray(vao_id);
+    gl::BufferData(
+        gl::ARRAY_BUFFER, 
+        byte_size_of_array(indices),
+        indices.as_ptr() as *const::types::GLvoid,
+        gl::STATIC_DRAW,
+    );
     
-    let 
+
 
 
         
@@ -142,10 +144,17 @@ fn main() {
 
         // == // Set up your VAO here
         //jeg veitafaen hva jeg driver med
+        let v: Vec<f32> = vec![0.1, 0.2, 0.4, 0.6, 0.7, 0.8, 1.2, 0.9, 1.0];
+        let i: Vec<u32> = vec![0,1,4];
+
         unsafe {
-            GLuint VertexArrayID;
+            let mut vao = vao_trngle_Factory(&v,&i);
+            
+
+            /*GLuint VertexArrayID;
             glGenVertexArrays(1, &VertexArrayID);
             glBindVertexArray(VertexArrayID);
+            */
         }
 
         // Basic usage of shader helper
