@@ -48,35 +48,33 @@ unsafe fn vao_trngle_Factory(vertex: &Vec<f32>, indices: &Vec<u32>) -> u32{
 
     let mut vbo_id: GLuint = 0;
     gl::GenBuffers(1,&mut vbo_id);
-    
-    
     gl::BindBuffer(gl::ARRAY_BUFFER,vbo_id);
     gl::BufferData(
         gl::ARRAY_BUFFER,  //target, typen vi ønsker å buffre.
-        (vertex.len() * size_of<f32>()) as gl::types::GLsizeiptr,
+        byte_size_of_array(&vertex),
         vertex.as_ptr() as *const gl::types::GLvoid, //pointer to data, and size  
         gl::STATIC_DRAW, //usage
     );
     
-    gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-
+    //gl::BindBuffer(gl::ARRAY_BUFFER, 0);
     gl::EnableVertexAttribArray(0);
     gl::VertexAttribPointer(
         0, //generisk vertex attributt
         3, //antall componenter per vertex komponent.
         gl::FLOAT, 
-        gl::0, // int to float conversion (normalizzed) det her skjønte jeg ikke....
+        0, //(sto "gl::false" her tidligere) int to float conversion (normalizzed) det her skjønte jeg ikke....
         (3*size_of::<f32>()) as gl::types::GLint,
         std::ptr::null()
     );
 
-    gl::GenBuffers(0,&mut vbo_id);    
-    gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-    gl::BindVertexArray(vao_id);
+    let mut vib_id: GLuint = 0;
+    gl::GenBuffers(1,&mut vib_id);    
+    gl::BindBuffer(gl::ARRAY_BUFFER, vib_id);
+    //gl::BindVertexArray(vao_id);
     gl::BufferData(
         gl::ARRAY_BUFFER, 
         byte_size_of_array(indices),
-        indices.as_ptr() as *const::types::GLvoid,
+        pointer_to_array(&indices), //const::types::GLvoid,
         gl::STATIC_DRAW,
     );
     
@@ -84,7 +82,6 @@ unsafe fn vao_trngle_Factory(vertex: &Vec<f32>, indices: &Vec<u32>) -> u32{
 
 
         
-
 
     return vao_id;
 } 
@@ -144,26 +141,31 @@ fn main() {
 
         // == // Set up your VAO here
         //jeg veitafaen hva jeg driver med
-        let v: Vec<f32> = vec![0.1, 0.2, 0.4, 0.6, 0.7, 0.8, 1.2, 0.9, 1.0];
+        let v: Vec<f32> = vec![
+        0.1, 0.2, 0.4, 
+        0.6, 0.7, 0.8, 
+        1.2, 0.9, 1.0];
         let i: Vec<u32> = vec![0,1,4];
 
-        unsafe {
-            let mut vao = vao_trngle_Factory(&v,&i);
+        let vao = unsafe {
+            vao_trngle_Factory(&v,&i);
+            
+            //let mut vao = vao_trngle_Factory(&v,&i);
             
 
             /*GLuint VertexArrayID;
             glGenVertexArrays(1, &VertexArrayID);
             glBindVertexArray(VertexArrayID);
             */
-        }
+        };
 
         // Basic usage of shader helper
         // The code below returns a shader object, which contains the field .program_id
         // The snippet is not enough to do the assignment, and will need to be modified (outside of just using the correct path), but it only needs to be called once
         // shader::ShaderBuilder::new().attach_file("./path/to/shader").link();
-        unsafe {
-
-        }
+        let shader = unsafe{
+            shader::ShaderBuilder::new().attach_file(".\shaders\simple.frag").attach_file(".\shaders\simple.vert").link();
+        };
 
         // Used to demonstrate keyboard handling -- feel free to remove
         let mut _arbitrary_number = 0.0;
