@@ -40,7 +40,7 @@ fn offset<T>(n: u32) -> *const c_void {
 
 
 // == // Modify and complete the function below for the first task
-unsafe fn vao_trngle_factory(vertex: &Vec<f32>, indices: &Vec<u32>) -> u32{ 
+unsafe fn vao_trngle_factory(vertex: &Vec<f32>, indices: &Vec<u32>, color: &Vec<f32>) -> u32{   //[r,g,b,alpha] alpha: 0=transparent,1=opaque
     let mut vao_id: GLuint = 0;
     gl::GenVertexArrays(1, &mut vao_id);  //lager arrays med punkter
     gl::BindVertexArray(vao_id);      //gjør array til VAO bundet
@@ -56,7 +56,6 @@ unsafe fn vao_trngle_factory(vertex: &Vec<f32>, indices: &Vec<u32>) -> u32{
         gl::STATIC_DRAW, //usage
     );
     
-    //gl::BindBuffer(gl::ARRAY_BUFFER, 0);
     gl::EnableVertexAttribArray(0);
     gl::VertexAttribPointer(
         0, //generisk vertex attributt
@@ -66,7 +65,7 @@ unsafe fn vao_trngle_factory(vertex: &Vec<f32>, indices: &Vec<u32>) -> u32{
         0, //(3*size_of::<f32>()) as gl::types::GLint,
         std::ptr::null()
     );
-
+    
     let mut vib_id: GLuint = 0;
     gl::GenBuffers(1,&mut vib_id);    
     gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, vib_id);
@@ -75,13 +74,24 @@ unsafe fn vao_trngle_factory(vertex: &Vec<f32>, indices: &Vec<u32>) -> u32{
         gl::ELEMENT_ARRAY_BUFFER, 
         byte_size_of_array(&indices),
         pointer_to_array(&indices), //const::types::GLvoid,
-        gl::STATIC_DRAW,
+        gl::STATIC_DRAW
     );
     
+    
+    
+    let mut color_vbo_id: GLuint = 0;   
+    gl::GenBuffers(1,&mut color_vbo_id);
+    gl::BindBuffer(gl::COLOR_BUFFER_BIT,color_vbo_id);
+    gl::BufferData(
+        gl::ARRAY_BUFFER,  //target, typen vi ønsker å buffre.
+        byte_size_of_array(&color),
+        pointer_to_array(&color), //pointer to data, and size  
+        gl::STATIC_DRAW, //usage
+    );
+    gl::EnableVertexAttribArray(0);
+    gl::VertexAttribPointer(0,4,gl::FLOAT,gl::FALSE,0,std::ptr::null());
 
-
-
-        
+    
 
     return vao_id;
 } 
@@ -94,7 +104,7 @@ fn main() {
     // Set up the necessary objects to deal with windows and event handling
     let el = glutin::event_loop::EventLoop::new();
     let wb = glutin::window::WindowBuilder::new()
-        .with_title("Gloom-rs")
+        .with_title("BtlerberForkedGloom-rs")
         .with_resizable(false)
         .with_inner_size(glutin::dpi::LogicalSize::new(SCREEN_W, SCREEN_H));
     let cb = glutin::ContextBuilder::new()
@@ -142,45 +152,46 @@ fn main() {
         // == // Set up your VAO here
         //jeg veitafaen hva jeg driver med eedit: vet litt mer nå
         let mut v: Vec<f32> = vec![
-        -1.0, -1.0, 0.0,
-        -0.9, -0.9, 0.0,
-        -1.0, -0.9, 0.0
-        
-        -0.2, -0.2, 0.0,
-        0.2, -0.2, 0.0,
-        0.0, -0.1, 0.0
-        
-        ];
-        
-        let i: Vec<u32> =
-         vec![
-            0,1,2,
-            4,5,6,
-            7,8,9,
-            10,11,12,
-            13,14,15,
-            16,17,18
+            -0.6, -0.6, 0.,
+            0.6, -0.6, 0.,
+            0., 0.6, 0.,
+
+            -0.9, -0.9, 0.,
+            -0.7, -0.9, 0.,
+            -0.8, -0.7, 0.,
+
+            0.6, -0.8, -1.2,
+            0., 0.4, 0.,
+            -0.8, -0.2, 1.2
             ];
 
-        let vao = unsafe {
-            vao_trngle_factory(&v,&i)
-            
-            //let mut vao = vao_trngle_factory(&v,&i);
-            
+        let i: Vec<u32> = vec![
+            0, 1, 2,
+            3, 4, 0,
+            5, 6, 70,1,2,
+            4,5,6,
+            ];
 
-            /*GLuint VertexArrayID;
-            glGenVertexArrays(1, &VertexArrayID);
-            glBindVertexArray(VertexArrayID);
-            */
+        let c: Vec<f32> = vec![
+            0.1,0.1,0.1,0.9,
+            0.9,0.1,0.1,0.1,
+            0.1,0.9,0.1,0.1,
+            //0.2,0.7,0.9,0.2
+            ];
+
+        unsafe {
+            let vao = vao_trngle_factory(&v,&i,&c);
+            gl::BindVertexArray(vao);
         };
+        
 
         // Basic usage of shader helper
         // The code below returns a shader object, which contains the field .program_id
         // The snippet is not enough to do the assignment, and will need to be modified (outside of just using the correct path), but it only needs to be called once
         // shader::ShaderBuilder::new().attach_file("./path/to/shader").link();
-        let shader = unsafe{
-            shader::ShaderBuilder::new().attach_file("./shaders/simple.frag").attach_file("./shaders/simple.vert").link()
-                
+        unsafe{
+            let mut shader = shader::ShaderBuilder::new().attach_file("./shaders/simple.frag").attach_file("./shaders/simple.vert").link();
+            gl::UseProgram(shader.program_id);
         };
         
 
@@ -190,6 +201,9 @@ fn main() {
         let first_frame_time = std::time::Instant::now();
         let mut last_frame_time = first_frame_time;
         // The main rendering loop
+        
+        
+        
         loop {
             let now = std::time::Instant::now();
             let elapsed = now.duration_since(first_frame_time).as_secs_f32();
@@ -221,11 +235,10 @@ fn main() {
             unsafe {
                 gl::ClearColor(0.163, 0.163, 0.163, 1.0);
                 gl::Clear(gl::COLOR_BUFFER_BIT);
-                gl::UseProgram(shader.program_id);
+                //gl::UseProgram(shader.program_id); flyttet til der shader blir opprettet
                 // Issue the necessary commands to draw your scene here
-                gl::BindVertexArray(vao);
-                //vao.bind();           
-               gl::DrawElements(gl::TRIANGLES,i.len() as i32,gl::UNSIGNED_INT, ptr::null());
+                   //vao.bind();
+                gl::DrawElements(gl::TRIANGLES,(3*i.len())as i32,gl::UNSIGNED_INT, ptr::null());
                
             }
 
